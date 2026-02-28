@@ -1,4 +1,4 @@
-package com.anselmo.flows.adapters.in.web.filter;
+package com.anselmo.flows.adapters.in.http.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

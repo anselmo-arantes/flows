@@ -1,6 +1,6 @@
-package com.anselmo.flows.adapters.in.web.exception;
+package com.anselmo.flows.adapters.in.http.exception;
 
-import com.anselmo.flows.adapters.in.web.dto.FlowErrorDto;
+import com.anselmo.flows.adapters.in.http.dto.FlowErrorDto;
 import com.anselmo.flows.adapters.out.crypto.CryptoOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

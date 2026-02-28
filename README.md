@@ -19,7 +19,7 @@ src/main/java/com/anselmo/flows
 │   ├── port/out
 │   └── service
 ├── adapters
-│   ├── in/web
+│   ├── in/http
 │   └── out/crypto
 └── config
 ```

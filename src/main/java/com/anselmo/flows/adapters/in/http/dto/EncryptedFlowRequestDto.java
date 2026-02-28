@@ -1,4 +1,4 @@
-package com.anselmo.flows.adapters.in.web.dto;
+package com.anselmo.flows.adapters.in.http.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

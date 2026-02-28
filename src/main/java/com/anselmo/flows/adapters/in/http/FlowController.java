@@ -1,7 +1,7 @@
-package com.anselmo.flows.adapters.in.web;
+package com.anselmo.flows.adapters.in.http;
 
-import com.anselmo.flows.adapters.in.web.dto.EncryptedFlowRequestDto;
-import com.anselmo.flows.adapters.in.web.dto.EncryptedFlowResponseDto;
+import com.anselmo.flows.adapters.in.http.dto.EncryptedFlowRequestDto;
+import com.anselmo.flows.adapters.in.http.dto.EncryptedFlowResponseDto;
 import com.anselmo.flows.application.port.in.HandleFlowRequestUseCase;
 import com.anselmo.flows.domain.model.EncryptedFlowRequest;
 import com.anselmo.flows.domain.model.EncryptedFlowResponse;

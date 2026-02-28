@@ -1,4 +1,4 @@
-package com.anselmo.flows.adapters.in.web;
+package com.anselmo.flows.adapters.in.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
