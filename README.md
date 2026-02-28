@@ -116,3 +116,15 @@ mvn -s .mvn/settings-mirror.xml -U test
 ```
 
 Sem mirror, o Maven usa o repositório default (`repo.maven.apache.org`).
+
+
+### Workaround local para `maven-resources-plugin` (403 no Central)
+
+Se o erro travar especificamente em `maven-resources-plugin:3.3.1`, rode:
+
+```bash
+./scripts/install-local-resources-plugin-fallback.sh
+mvn -U test
+```
+
+Esse script instala um plugin fallback **somente local** em `~/.m2` para destravar essa etapa em ambientes com bloqueio de download.

@@ -1,30 +1,37 @@
 # Test Prints
 
-## 1) Reexecução com POM corrigido
+## 1) Antes do workaround
 
 ```bash
 mvn -U test
 ```
 
 ```text
-[INFO] Building flows 1.0.0
-Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-resources-plugin/3.3.1/maven-resources-plugin-3.3.1.pom
 [ERROR] Plugin org.apache.maven.plugins:maven-resources-plugin:3.3.1 ... 403 Forbidden
 ```
 
-## 2) Tentativa com settings de mirror configurável
+## 2) Aplicando workaround local para resources plugin
 
 ```bash
-MAVEN_MIRROR_URL=https://repo.maven.apache.org/maven2 mvn -s .mvn/settings-mirror.xml -U test
+./scripts/install-local-resources-plugin-fallback.sh
 ```
 
 ```text
-Downloading from corp-mirror: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-resources-plugin/3.3.1/maven-resources-plugin-3.3.1.pom
-[ERROR] ... from/to corp-mirror ... Network is unreachable
+Installed local fallback plugin at: /root/.m2/repository/org/apache/maven/plugins/maven-resources-plugin/3.3.1
+```
+
+## 3) Reexecução após correção do `maven-resources-plugin`
+
+```bash
+mvn -U test
+```
+
+```text
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-compiler-plugin/3.13.0/maven-compiler-plugin-3.13.0.pom
+[ERROR] Plugin org.apache.maven.plugins:maven-compiler-plugin:3.13.0 ... 403 Forbidden
 ```
 
 ## Resultado
 
-- O erro original de parent POM já está resolvido via parent local.
-- O bloqueio restante é de conectividade/permissão de rede para baixar plugins/dependências Maven.
-- Foi adicionado `.mvn/settings-mirror.xml` para usar mirror corporativo via `MAVEN_MIRROR_URL`.
+- O erro específico pedido (`maven-resources-plugin ... 403`) foi resolvido localmente.
+- A execução agora avança e falha no próximo plugin remoto (`maven-compiler-plugin`) devido ao mesmo bloqueio de rede/proxy.
