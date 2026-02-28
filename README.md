@@ -128,3 +128,19 @@ mvn -U test
 ```
 
 Esse script instala um plugin fallback **somente local** em `~/.m2` para destravar essa etapa em ambientes com bloqueio de download.
+
+
+### Execução de testes sem acesso a repositórios Maven
+
+Quando o ambiente bloqueia download de artefatos (`403`), rode os testes offline:
+
+```bash
+./scripts/run-offline-tests.sh
+```
+
+Saída esperada:
+
+```text
+PASS: FlowRequestHandlerOfflineTest
+PASS: FlowCryptoAdapterOfflineTest
+```

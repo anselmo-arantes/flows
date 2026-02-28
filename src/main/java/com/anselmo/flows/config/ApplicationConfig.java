@@ -4,7 +4,6 @@ import com.anselmo.flows.adapters.out.crypto.FlowCryptoServiceAdapter;
 import com.anselmo.flows.application.port.in.HandleFlowRequestUseCase;
 import com.anselmo.flows.application.port.out.CryptoServicePort;
 import com.anselmo.flows.application.service.FlowRequestHandlerService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,11 +21,10 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public FlowCryptoServiceAdapter flowCryptoServiceAdapter(ObjectMapper objectMapper,
-                                                             org.springframework.core.env.Environment environment) {
+    public FlowCryptoServiceAdapter flowCryptoServiceAdapter(org.springframework.core.env.Environment environment) {
         String privateKeyPem = environment.getProperty("flows.crypto.private-key-pem", "");
         String rsaTransformation = environment.getProperty("flows.crypto.rsa-transformation",
                 "RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-        return new FlowCryptoServiceAdapter(objectMapper, privateKeyPem, rsaTransformation);
+        return new FlowCryptoServiceAdapter(privateKeyPem, rsaTransformation);
     }
 }

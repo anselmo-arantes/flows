@@ -5,10 +5,6 @@ import com.anselmo.flows.domain.model.CryptoContext;
 import com.anselmo.flows.domain.model.DecryptedFlowRequest;
 import com.anselmo.flows.domain.model.EncryptedFlowRequest;
 import com.anselmo.flows.domain.model.FlowResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -20,21 +16,19 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FlowCryptoServiceAdapter implements CryptoServicePort {
 
     private static final String AES_TRANSFORMATION = "AES/CBC/PKCS5Padding";
 
-    private final ObjectMapper objectMapper;
     private final PrivateKey privateKey;
     private final String rsaTransformation;
 
-    public FlowCryptoServiceAdapter(
-            ObjectMapper objectMapper,
-            @Value("${flows.crypto.private-key-pem}") String privateKeyPem,
-            @Value("${flows.crypto.rsa-transformation:RSA/ECB/OAEPWithSHA-256AndMGF1Padding}") String rsaTransformation
-    ) {
-        this.objectMapper = objectMapper.copy().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    public FlowCryptoServiceAdapter(String privateKeyPem, String rsaTransformation) {
         this.privateKey = toPrivateKey(privateKeyPem);
         this.rsaTransformation = rsaTransformation;
     }
@@ -48,10 +42,10 @@ public class FlowCryptoServiceAdapter implements CryptoServicePort {
 
             SecretKey aesKey = decryptAesKey(encryptedAesKey);
             byte[] decryptedData = decryptAesPayload(aesKey, iv, encryptedData);
-            DecryptedFlowRequest decryptedRequest = objectMapper.readValue(decryptedData, DecryptedFlowRequest.class);
+            DecryptedFlowRequest decryptedRequest = parseRequestJson(new String(decryptedData, StandardCharsets.UTF_8));
 
             return new DecryptedPayload(decryptedRequest, new CryptoContext(aesKey, iv));
-        } catch (IllegalArgumentException | GeneralSecurityException | JsonProcessingException ex) {
+        } catch (IllegalArgumentException | GeneralSecurityException ex) {
             throw new CryptoOperationException("unable to decrypt request", ex);
         }
     }
@@ -59,14 +53,56 @@ public class FlowCryptoServiceAdapter implements CryptoServicePort {
     @Override
     public String encryptResponse(FlowResponse response, CryptoContext context) {
         try {
-            byte[] plainResponse = objectMapper.writeValueAsBytes(response);
+            byte[] plainResponse = toResponseJson(response).getBytes(StandardCharsets.UTF_8);
             Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
             cipher.init(Cipher.ENCRYPT_MODE, context.aesKey(), new IvParameterSpec(context.iv()));
             byte[] encrypted = cipher.doFinal(plainResponse);
             return Base64.getEncoder().encodeToString(encrypted);
-        } catch (GeneralSecurityException | JsonProcessingException ex) {
+        } catch (GeneralSecurityException ex) {
             throw new CryptoOperationException("unable to encrypt response", ex);
         }
+    }
+
+    private DecryptedFlowRequest parseRequestJson(String json) {
+        String version = extractString(json, "version");
+        String userLocale = extractString(json, "user_locale");
+        String action = extractString(json, "action");
+        String screen = extractString(json, "screen");
+        String flowToken = extractString(json, "flow_token");
+        return new DecryptedFlowRequest(version, userLocale, action, screen, Map.of(), flowToken);
+    }
+
+    private String toResponseJson(FlowResponse response) {
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        sb.append("\"version\":\"").append(escape(response.version())).append("\",");
+        sb.append("\"screen\":\"").append(escape(response.screen())).append("\",");
+        sb.append("\"data\":{");
+
+        boolean first = true;
+        for (Map.Entry<String, Object> entry : response.data().entrySet()) {
+            if (!first) {
+                sb.append(',');
+            }
+            first = false;
+            sb.append("\"").append(escape(entry.getKey())).append("\":\"")
+                    .append(escape(String.valueOf(entry.getValue()))).append("\"");
+        }
+        sb.append("}}");
+        return sb.toString();
+    }
+
+    private String extractString(String json, String key) {
+        Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(key) + "\\\"\\s*:\\s*\\\"(.*?)\\\"");
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return "";
+    }
+
+    private String escape(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private SecretKey decryptAesKey(byte[] encryptedAesKey) throws GeneralSecurityException {
