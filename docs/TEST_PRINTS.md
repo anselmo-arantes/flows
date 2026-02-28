@@ -3,7 +3,7 @@
 ## Command
 
 ```bash
-mvn test -DskipTests=false
+mvn -U test
 ```
 
 ## Output (capturado)
@@ -17,4 +17,4 @@ Downloading from central: https://repo.maven.apache.org/maven2/org/springframewo
 
 ## Observação
 
-No ambiente atual, os testes não executam porque o Maven não consegue resolver o parent POM do Spring Boot devido a HTTP 403 no repositório central.
+Mesmo com internet liberada, neste ambiente o Maven Central continua respondendo HTTP 403 para o parent POM do Spring Boot, impedindo a execução dos testes.
