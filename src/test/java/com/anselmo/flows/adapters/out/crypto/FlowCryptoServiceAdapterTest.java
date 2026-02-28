@@ -38,11 +38,11 @@ class FlowCryptoServiceAdapterTest {
 
         String requestJson = objectMapper.writeValueAsString(Map.of(
                 "version", "3.0",
-                "userLocale", "pt_BR",
+                "user_locale", "pt_BR",
                 "action", "data_exchange",
                 "screen", "START",
                 "data", Map.of("field", "value"),
-                "flowToken", "token"
+                "flow_token", "token"
         ));
 
         String encryptedFlowData = encryptAes(aesKey, iv, requestJson.getBytes(StandardCharsets.UTF_8));

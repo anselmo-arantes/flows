@@ -24,14 +24,34 @@ public class FlowRequestHandlerService implements HandleFlowRequestUseCase {
         CryptoServicePort.DecryptedPayload decryptedPayload = cryptoService.decryptRequest(request);
         DecryptedFlowRequest decryptedRequest = decryptedPayload.request();
 
-        FlowResponse response = new FlowResponse(
-                decryptedRequest.version(),
-                resolveScreen(decryptedRequest),
-                Map.of("message", DEFAULT_MESSAGE)
-        );
+        FlowResponse response = switch (safeAction(decryptedRequest.action())) {
+            case "ping" -> new FlowResponse(
+                    defaultIfBlank(decryptedRequest.version(), "1.0"),
+                    resolveScreen(decryptedRequest),
+                    Map.of("message", "pong")
+            );
+            case "init", "back", "data_exchange" -> new FlowResponse(
+                    defaultIfBlank(decryptedRequest.version(), "1.0"),
+                    resolveScreen(decryptedRequest),
+                    Map.of("message", DEFAULT_MESSAGE)
+            );
+            default -> new FlowResponse(
+                    defaultIfBlank(decryptedRequest.version(), "1.0"),
+                    resolveScreen(decryptedRequest),
+                    Map.of("message", DEFAULT_MESSAGE)
+            );
+        };
 
         String encrypted = cryptoService.encryptResponse(response, decryptedPayload.context());
         return new EncryptedFlowResponse(encrypted);
+    }
+
+    private String safeAction(String action) {
+        return action == null ? "" : action.trim().toLowerCase();
+    }
+
+    private String defaultIfBlank(String value, String fallback) {
+        return (value == null || value.isBlank()) ? fallback : value;
     }
 
     private String resolveScreen(DecryptedFlowRequest request) {

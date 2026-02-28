@@ -5,7 +5,6 @@ import com.anselmo.flows.adapters.out.crypto.CryptoOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -46,8 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<FlowErrorDto> handleGeneric(Exception ex) {
         LOGGER.error("unexpected error while processing request correlationId={}", MDC.get("correlationId"));
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new FlowErrorDto(
+        return ResponseEntity.ok(new FlowErrorDto(
                         MDC.get("correlationId"),
                         "internal_server_error",
                         Map.of()

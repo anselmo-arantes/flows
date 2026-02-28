@@ -55,11 +55,11 @@ class FlowControllerIntegrationTest {
 
         String plainPayload = objectMapper.writeValueAsString(Map.of(
                 "version", "7.1",
-                "userLocale", "pt_BR",
+                "user_locale", "pt_BR",
                 "action", "init",
                 "screen", "START",
                 "data", Map.of("name", "anselmo"),
-                "flowToken", "token"
+                "flow_token", "token"
         ));
 
         String requestBody = objectMapper.writeValueAsString(Map.of(

@@ -1,31 +1,30 @@
-# Test Results (Prints de execução)
+# Test Results (JUnit real x Offline smoke)
 
-## Resumo rápido
-
-| Suite | Comando | Resultado |
-|---|---|---|
-| Maven root test run | `mvn -U test` | ✅ BUILD SUCCESS |
-| Offline smoke tests | `./scripts/run-offline-tests.sh` | ✅ 2/2 PASS |
-
----
-
-## 1) Maven (`mvn -U test`)
+## 1) JUnit real (Maven Surefire) — tentativa direta
 
 ```bash
 mvn -U test
 ```
 
 ```text
-[INFO] Scanning for projects...
-[INFO] -------------------------< com.anselmo:flows >--------------------------
-[INFO] Building flows 1.0.0
-[INFO] --------------------------------[ pom ]---------------------------------
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
+[ERROR] Plugin org.apache.maven.plugins:maven-resources-plugin:3.3.1 ... 403 Forbidden
 ```
 
-## 2) Offline tests (`./scripts/run-offline-tests.sh`)
+## 2) JUnit real com workaround do resources plugin
+
+```bash
+./scripts/install-local-resources-plugin-fallback.sh
+mvn -U test
+```
+
+```text
+Installed local fallback plugin at: /root/.m2/repository/org/apache/maven/plugins/maven-resources-plugin/3.3.1
+[ERROR] Plugin org.apache.maven.plugins:maven-compiler-plugin:3.13.0 ... 403 Forbidden
+```
+
+**Status JUnit real:** ainda bloqueado no ambiente por 403 ao baixar plugins Maven.
+
+## 3) Offline smoke tests (sem Maven)
 
 ```bash
 ./scripts/run-offline-tests.sh
@@ -33,9 +32,11 @@ mvn -U test
 
 ```text
 PASS: FlowRequestHandlerOfflineTest
-PASS: FlowCryptoAdapterOfflineTest
 ```
 
-## Observação
+**Status offline smoke:** executado com sucesso.
 
-Estes são os prints reais coletados no ambiente atual e anexados no PR para leitura rápida.
+## Leitura correta
+
+- `mvn test` = validação JUnit real (quando dependências/plugins Maven estão acessíveis).
+- `run-offline-tests.sh` = smoke check mínimo e não substitui a suíte JUnit.

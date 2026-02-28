@@ -142,5 +142,12 @@ Saída esperada:
 
 ```text
 PASS: FlowRequestHandlerOfflineTest
-PASS: FlowCryptoAdapterOfflineTest
 ```
+
+
+### Diferença entre JUnit real e offline smoke
+
+- `mvn -U test`: executa a suíte JUnit real (`src/test/java`) via Surefire.
+- `./scripts/run-offline-tests.sh`: executa smoke test local mínimo e **não substitui** a suíte JUnit completa.
+
+Use os dois quando possível: primeiro Maven JUnit, depois offline smoke como sanity check rápido.
