@@ -1,22 +1,6 @@
 # Test Prints
 
-## 1) Reexecução inicial
-
-```bash
-mvn -U test
-```
-
-```text
-[FATAL] Non-resolvable parent POM ... spring-boot-starter-parent:3.3.2 ... 403 Forbidden
-```
-
-## 2) Correção aplicada no POM
-
-- Foi criado um parent local em `build-support/spring-boot-starter-parent/pom.xml`.
-- `pom.xml` passou a usar `relativePath` para esse parent local.
-- Foram definidos versions explícitos para os starters/plugins para remover dependência de resolução do parent remoto.
-
-## 3) Reexecução após correção do POM
+## 1) Reexecução com POM corrigido
 
 ```bash
 mvn -U test
@@ -28,6 +12,19 @@ Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/
 [ERROR] Plugin org.apache.maven.plugins:maven-resources-plugin:3.3.1 ... 403 Forbidden
 ```
 
-## Observação
+## 2) Tentativa com settings de mirror configurável
 
-O problema específico do **parent POM** foi resolvido. O bloqueio atual é de acesso HTTP 403 ao repositório Maven para baixar plugins/dependências.
+```bash
+MAVEN_MIRROR_URL=https://repo.maven.apache.org/maven2 mvn -s .mvn/settings-mirror.xml -U test
+```
+
+```text
+Downloading from corp-mirror: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-resources-plugin/3.3.1/maven-resources-plugin-3.3.1.pom
+[ERROR] ... from/to corp-mirror ... Network is unreachable
+```
+
+## Resultado
+
+- O erro original de parent POM já está resolvido via parent local.
+- O bloqueio restante é de conectividade/permissão de rede para baixar plugins/dependências Maven.
+- Foi adicionado `.mvn/settings-mirror.xml` para usar mirror corporativo via `MAVEN_MIRROR_URL`.

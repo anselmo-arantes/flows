@@ -104,3 +104,15 @@ curl -sS -X POST http://localhost:8080/v1/flows/data \
 ```bash
 mvn test
 ```
+
+
+## Ambiente restrito (erro 403 no Maven Central)
+
+Se aparecer erro `Could not transfer artifact ... 403 Forbidden`, execute com um mirror interno:
+
+```bash
+export MAVEN_MIRROR_URL="https://SEU_MIRROR_MAVEN/repository/maven-public"
+mvn -s .mvn/settings-mirror.xml -U test
+```
+
+Sem mirror, o Maven usa o repositório default (`repo.maven.apache.org`).
