@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+flows:
+  crypto:
+    private-key-pem: ${FLOWS_RSA_PRIVATE_KEY_PEM:}
+    rsa-transformation: ${FLOWS_RSA_TRANSFORMATION:RSA/ECB/OAEPWithSHA-256AndMGF1Padding}
+
+logging:
+  pattern:
+    level: "%5p [correlationId:%X{correlationId}]"
