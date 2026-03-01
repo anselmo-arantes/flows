@@ -17,7 +17,7 @@ class FlowRequestHandlerServiceTest {
 
     @Test
     void shouldBuildExpectedFlowResponseAndEncrypt() {
-        StubCryptoService stub = new StubCryptoService();
+        StubCryptoService stub = new StubCryptoService(new DecryptedFlowRequest("1.2", "pt_BR", "init", "HOME", Map.of(), "token"));
         FlowRequestHandlerService service = new FlowRequestHandlerService(stub);
 
         EncryptedFlowResponse result = service.handle(new EncryptedFlowRequest("data", "key", "iv"));
@@ -28,10 +28,29 @@ class FlowRequestHandlerServiceTest {
         assertEquals("resposta da API criada pelo Anselmo", stub.capturedResponse.data().get("message"));
     }
 
+    @Test
+    void shouldUseStartWhenScreenIsBlank() {
+        StubCryptoService stub = new StubCryptoService(new DecryptedFlowRequest("1.2", "pt_BR", "init", "  ", Map.of(), "token"));
+        FlowRequestHandlerService service = new FlowRequestHandlerService(stub);
+
+        service.handle(new EncryptedFlowRequest("data", "key", "iv"));
+
+        assertEquals("START", stub.capturedResponse.screen());
+    }
+
+    @Test
+    void shouldUseFallbackVersionWhenBlank() {
+        StubCryptoService stub = new StubCryptoService(new DecryptedFlowRequest("", "pt_BR", "init", "HOME", Map.of(), "token"));
+        FlowRequestHandlerService service = new FlowRequestHandlerService(stub);
+
+        service.handle(new EncryptedFlowRequest("data", "key", "iv"));
+
+        assertEquals("1.0", stub.capturedResponse.version());
+    }
 
     @Test
     void shouldReturnPongForPingAction() {
-        PingCryptoService stub = new PingCryptoService();
+        StubCryptoService stub = new StubCryptoService(new DecryptedFlowRequest("1.2", "pt_BR", "ping", "HOME", Map.of(), "token"));
         FlowRequestHandlerService service = new FlowRequestHandlerService(stub);
 
         EncryptedFlowResponse result = service.handle(new EncryptedFlowRequest("data", "key", "iv"));
@@ -41,30 +60,17 @@ class FlowRequestHandlerServiceTest {
     }
 
     private static class StubCryptoService implements CryptoServicePort {
+        private final DecryptedFlowRequest decryptedFlowRequest;
         private FlowResponse capturedResponse;
+
+        private StubCryptoService(DecryptedFlowRequest decryptedFlowRequest) {
+            this.decryptedFlowRequest = decryptedFlowRequest;
+        }
 
         @Override
         public DecryptedPayload decryptRequest(EncryptedFlowRequest request) {
             return new DecryptedPayload(
-                    new DecryptedFlowRequest("1.2", "pt_BR", "init", "HOME", Map.of(), "token"),
-                    new CryptoContext(new SecretKeySpec(new byte[16], "AES"), new byte[16])
-            );
-        }
-
-        @Override
-        public String encryptResponse(FlowResponse response, CryptoContext context) {
-            this.capturedResponse = response;
-            return "encrypted-result";
-        }
-    }
-
-    private static class PingCryptoService implements CryptoServicePort {
-        private FlowResponse capturedResponse;
-
-        @Override
-        public DecryptedPayload decryptRequest(EncryptedFlowRequest request) {
-            return new DecryptedPayload(
-                    new DecryptedFlowRequest("1.2", "pt_BR", "ping", "HOME", Map.of(), "token"),
+                    decryptedFlowRequest,
                     new CryptoContext(new SecretKeySpec(new byte[16], "AES"), new byte[16])
             );
         }
