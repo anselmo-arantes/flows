@@ -1,9 +1,9 @@
 # WhatsApp Flows Data Exchange API
 
-API Java 17 com Spring Boot 3.x para processar **WhatsApp Flows Data Exchange** com arquitetura **hexagonal (Ports & Adapters)**.
+API Java 21 com Spring Boot 3.x para processar **WhatsApp Flows Data Exchange** com arquitetura **hexagonal (Ports & Adapters)**.
 
 ## Stack
-- Java 17
+- Java 21
 - Spring Boot 3.3.x
 - Maven
 - AES/CBC/PKCS5Padding + RSA OAEP SHA-256
@@ -117,37 +117,13 @@ mvn -s .mvn/settings-mirror.xml -U test
 
 Sem mirror, o Maven usa o repositório default (`repo.maven.apache.org`).
 
+### Execução de testes (JUnit real)
 
-### Workaround local para `maven-resources-plugin` (403 no Central)
-
-Se o erro travar especificamente em `maven-resources-plugin:3.3.1`, rode:
+Use o comando abaixo para executar a suíte de testes em `src/test/java`:
 
 ```bash
-./scripts/install-local-resources-plugin-fallback.sh
 mvn -U test
 ```
 
-Esse script instala um plugin fallback **somente local** em `~/.m2` para destravar essa etapa em ambientes com bloqueio de download.
+No ambiente atual, os testes foram executados com sucesso (ver `docs/TEST_PRINTS.md`).
 
-
-### Execução de testes sem acesso a repositórios Maven
-
-Quando o ambiente bloqueia download de artefatos (`403`), rode os testes offline:
-
-```bash
-./scripts/run-offline-tests.sh
-```
-
-Saída esperada:
-
-```text
-PASS: FlowRequestHandlerOfflineTest
-```
-
-
-### Diferença entre JUnit real e offline smoke
-
-- `mvn -U test`: executa a suíte JUnit real (`src/test/java`) via Surefire.
-- `./scripts/run-offline-tests.sh`: executa smoke test local mínimo e **não substitui** a suíte JUnit completa.
-
-Use os dois quando possível: primeiro Maven JUnit, depois offline smoke como sanity check rápido.

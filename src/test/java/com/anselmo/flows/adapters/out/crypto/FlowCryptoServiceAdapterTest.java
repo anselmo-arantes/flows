@@ -1,7 +1,6 @@
 package com.anselmo.flows.adapters.out.crypto;
 
 import com.anselmo.flows.application.port.out.CryptoServicePort;
-import com.anselmo.flows.domain.model.CryptoContext;
 import com.anselmo.flows.domain.model.EncryptedFlowRequest;
 import com.anselmo.flows.domain.model.FlowResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +17,7 @@ import java.util.Base64;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FlowCryptoServiceAdapterTest {
 
@@ -54,12 +54,31 @@ class FlowCryptoServiceAdapterTest {
 
         assertEquals("3.0", payload.request().version());
         assertEquals("data_exchange", payload.request().action());
+        assertEquals("value", payload.request().data().get("field"));
 
         FlowResponse flowResponse = new FlowResponse("3.0", "START", Map.of("message", "ok"));
         String encryptedResponse = adapter.encryptResponse(flowResponse, payload.context());
 
         String decryptedResponse = decryptAes(payload.context().aesKey(), payload.context().iv(), Base64.getDecoder().decode(encryptedResponse));
         assertEquals(objectMapper.writeValueAsString(flowResponse), decryptedResponse);
+    }
+
+    @Test
+    void shouldThrowWhenPayloadIsInvalidBase64() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        KeyPair keyPair;
+        try {
+            keyPair = generateRsaKeyPair();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        String privatePem = toPkcs8Pem(keyPair);
+        FlowCryptoServiceAdapter adapter = new FlowCryptoServiceAdapter(objectMapper, privatePem, RSA_TRANSFORMATION);
+
+        EncryptedFlowRequest invalidRequest = new EncryptedFlowRequest("not-base64", "also-not-base64", "bad-iv");
+
+        assertThrows(CryptoOperationException.class, () -> adapter.decryptRequest(invalidRequest));
     }
 
     private static KeyPair generateRsaKeyPair() throws Exception {

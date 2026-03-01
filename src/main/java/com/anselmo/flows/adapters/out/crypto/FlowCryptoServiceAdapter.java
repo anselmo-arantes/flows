@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 import javax.crypto.Cipher;
+import java.io.IOException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -46,7 +47,7 @@ public class FlowCryptoServiceAdapter implements CryptoServicePort {
             DecryptedFlowRequest decryptedRequest = objectMapper.readValue(decryptedData, DecryptedFlowRequest.class);
 
             return new DecryptedPayload(decryptedRequest, new CryptoContext(aesKey, iv));
-        } catch (IllegalArgumentException | GeneralSecurityException | JsonProcessingException ex) {
+        } catch (IllegalArgumentException | GeneralSecurityException | IOException ex) {
             throw new CryptoOperationException("unable to decrypt request", ex);
         }
     }

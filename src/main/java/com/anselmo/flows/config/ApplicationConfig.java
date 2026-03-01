@@ -2,7 +2,6 @@ package com.anselmo.flows.config;
 
 import com.anselmo.flows.adapters.out.crypto.FlowCryptoServiceAdapter;
 import com.anselmo.flows.application.port.in.HandleFlowRequestUseCase;
-import com.anselmo.flows.application.port.out.CryptoServicePort;
 import com.anselmo.flows.application.service.FlowRequestHandlerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
@@ -11,14 +10,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ApplicationConfig {
 
-    @Bean
-    public CryptoServicePort cryptoServicePort(FlowCryptoServiceAdapter adapter) {
-        return adapter;
-    }
 
     @Bean
-    public HandleFlowRequestUseCase handleFlowRequestUseCase(CryptoServicePort cryptoServicePort) {
-        return new FlowRequestHandlerService(cryptoServicePort);
+    public HandleFlowRequestUseCase handleFlowRequestUseCase(FlowCryptoServiceAdapter cryptoServiceAdapter) {
+        return new FlowRequestHandlerService(cryptoServiceAdapter);
     }
 
     @Bean
